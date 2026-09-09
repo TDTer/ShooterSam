@@ -50,6 +50,22 @@ AShooterSamCharacter::AShooterSamCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void AShooterSamCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
+
+	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+	if (Gun) {
+		Gun->SetOwner(this);
+		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+	}
+	else {
+		UE_LOG(LogShooterSam, Error, TEXT("'%s' Failed to spawn gun!"), *GetNameSafe(this));
+	}
+}
+
 void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
@@ -65,6 +81,8 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Look);
+
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AShooterSamCharacter::Shoot);
 	}
 	else
 	{
@@ -82,7 +100,7 @@ void AShooterSamCharacter::Move(const FInputActionValue& Value)
 }
 
 void AShooterSamCharacter::Look(const FInputActionValue& Value)
-{
+{ 
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -130,4 +148,11 @@ void AShooterSamCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AShooterSamCharacter::Shoot()
+{
+	if (Gun) {
+		Gun->PullTrigger();
+	}
 }
