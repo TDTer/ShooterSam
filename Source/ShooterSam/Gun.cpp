@@ -2,25 +2,32 @@
 
 
 #include "Gun.h"
+#include <NiagaraFunctionLibrary.h>
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AGun::AGun()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+
 	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = SceneRoot;
 
 	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(SceneRoot);
+
+	MuzzleFlashParticleSystem = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MuzzleFlashParticleSystem"));
+	MuzzleFlashParticleSystem->SetupAttachment(Mesh);
+
 }
 
 // Called when the game starts or when spawned
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	MuzzleFlashParticleSystem->Deactivate();
 }
 
 // Called every frame
@@ -32,6 +39,49 @@ void AGun::Tick(float DeltaTime)
 
 void AGun::PullTrigger()
 {
-	UE_LOG(LogTemp, Warning, TEXT("BANG!"));
+	MuzzleFlashParticleSystem->Deactivate();
+	MuzzleFlashParticleSystem->Activate();
+
+	if (OwnerController) {
+		FVector ViewpointLocation;
+		FRotator ViewpointRotation;
+		OwnerController->GetPlayerViewPoint(ViewpointLocation, ViewpointRotation);
+
+		FVector EndLocation = ViewpointLocation + ViewpointRotation.Vector() * MaxRange;
+
+		FHitResult HitResult;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+		Params.AddIgnoredActor(GetOwner());
+		bool IsHit = GetWorld()->LineTraceSingleByChannel(
+			HitResult,
+			ViewpointLocation,
+			EndLocation,
+			ECollisionChannel::ECC_GameTraceChannel2,
+			Params
+		);
+
+		if (IsHit) {
+			//DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 12, FColor::Red, false, 2.0f);
+
+			if (ImpactParticleSystem) {
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+					GetWorld(),
+					ImpactParticleSystem,
+					HitResult.ImpactPoint,
+					HitResult.ImpactNormal.Rotation()
+				);
+
+				AActor* HitActor = HitResult.GetActor();
+				if (HitActor) {
+					UGameplayStatics::ApplyDamage(HitActor, BulletDamage, OwnerController, this, UDamageType::StaticClass());
+				}
+			}
+		}
+
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("No owner controller!"));
+	}
 }
 

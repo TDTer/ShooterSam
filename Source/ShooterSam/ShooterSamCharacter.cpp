@@ -16,7 +16,7 @@ AShooterSamCharacter::AShooterSamCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -54,12 +54,19 @@ void AShooterSamCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	OnTakeAnyDamage.AddDynamic(this, &AShooterSamCharacter::OnDamageTaken);
+
+	Health = MaxHealth;
+	IsAlive = true;
+
 	GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
 
 	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 	if (Gun) {
 		Gun->SetOwner(this);
 		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+
+		Gun->OwnerController = GetController();
 	}
 	else {
 		UE_LOG(LogShooterSam, Error, TEXT("'%s' Failed to spawn gun!"), *GetNameSafe(this));
@@ -70,7 +77,7 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -100,7 +107,7 @@ void AShooterSamCharacter::Move(const FInputActionValue& Value)
 }
 
 void AShooterSamCharacter::Look(const FInputActionValue& Value)
-{ 
+{
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -156,3 +163,21 @@ void AShooterSamCharacter::Shoot()
 		Gun->PullTrigger();
 	}
 }
+
+void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (IsAlive) {
+		UE_LOG(LogShooterSam, Log, TEXT("'%s' took %f damage from '%s'"), *GetNameSafe(this), Damage, *GetNameSafe(DamageCauser));
+
+		Health -= Damage;
+		if (Health <= 0.0f) {
+			IsAlive = false;
+			Health = 0.0f;
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+			UE_LOG(LogShooterSam, Log, TEXT("'%s' has died!"), *GetNameSafe(this));
+		}
+	}
+
+}
+
