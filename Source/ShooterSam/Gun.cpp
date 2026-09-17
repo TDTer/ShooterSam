@@ -42,6 +42,8 @@ void AGun::PullTrigger()
 	MuzzleFlashParticleSystem->Deactivate();
 	MuzzleFlashParticleSystem->Activate();
 
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShootSound, GetActorLocation());
+
 	if (OwnerController) {
 		FVector ViewpointLocation;
 		FRotator ViewpointRotation;
@@ -77,6 +79,8 @@ void AGun::PullTrigger()
 					UGameplayStatics::ApplyDamage(HitActor, BulletDamage, OwnerController, this, UDamageType::StaticClass());
 				}
 			}
+
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, HitResult.ImpactPoint);
 		}
 
 	}

@@ -13,8 +13,8 @@ UCLASS()
 class SHOOTERSAM_API AGun : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AGun();
 
@@ -22,7 +22,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -33,16 +33,22 @@ public:
 	USkeletalMeshComponent* Mesh;
 
 	UPROPERTY(VisibleAnywhere)
-   UNiagaraComponent* MuzzleFlashParticleSystem;
+	UNiagaraComponent* MuzzleFlashParticleSystem;
 
 	UPROPERTY(EditAnywhere)
-   UNiagaraSystem* ImpactParticleSystem;
+	UNiagaraSystem* ImpactParticleSystem;
 
 	UPROPERTY(EditAnywhere)
 	float MaxRange = 1000.0f;
 
 	UPROPERTY(EditAnywhere)
 	float BulletDamage = 10.0f;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* ShootSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* ImpactSound;
 
 	AController* OwnerController;
 
