@@ -7,11 +7,11 @@ My Unreal Engine 5.6 third-person shooter project. The gameplay and assets I dev
 
 The `MyStuff` folder contains the playable shooter setup:
 
-- `AI/` — enemy Blackboard, Behavior Tree, and shooter AI Blueprint.
-- `Animation/` — shooter character animation Blueprint and locomotion blend space.
-- `Blueprints/` — player, shooter character, rifle, GameMode, PlayerController, and HUD Blueprints.
-- `Map/MainLevel.umap` — the main playable level.
-- `SFX/` — rifle shot and rifle impact sounds.
+- `AI/` - enemy Blackboard, Behavior Tree, and shooter AI Blueprint.
+- `Animation/` - shooter character animation Blueprint and locomotion blend space.
+- `Blueprints/` - player, shooter character, rifle, GameMode, PlayerController, and HUD Blueprints.
+- `Map/MainLevel.umap` - the main playable level.
+- `SFX/` - rifle shot and rifle impact sounds.
 
 ## Running the Project
 
@@ -36,11 +36,11 @@ Requirements:
 
 ```text
 Content/MyStuff/
-??? AI/             # Enemy AI assets
-??? Animation/      # Character animation assets
-??? Blueprints/     # Gameplay and UI Blueprints
-??? Map/            # Main playable level
-??? SFX/            # Shooter sound effects
+|-- AI/             # Enemy AI assets
+|-- Animation/      # Character animation assets
+|-- Blueprints/     # Gameplay and UI Blueprints
+|-- Map/            # Main playable level
+|-- SFX/            # Shooter sound effects
 ```
 
 ## Development
